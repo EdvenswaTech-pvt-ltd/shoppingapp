@@ -44,6 +44,7 @@ pipeline {
                 
                 dir('src/emailservice') {
                 sh "docker build -t emailservice2 ."
+                sh "pwd"
                 }
             }
         }
