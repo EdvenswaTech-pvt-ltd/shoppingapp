@@ -51,7 +51,8 @@ pipeline {
         stage("push") {
             steps {
                 sh"""
-                pwd
+                echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+                docker push ajith8790/emailservice2:latest
                 """
             }
         }
