@@ -49,7 +49,9 @@ pipeline {
         }
         stage("push") {
             steps {
+                sh"""
                 pwd
+                """
             }
         }
     }
