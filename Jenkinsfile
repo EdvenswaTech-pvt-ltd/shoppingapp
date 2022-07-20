@@ -45,7 +45,11 @@ pipeline {
                 dir('src/emailservice') {
                 sh "docker build -t emailservice2 ."
                 }
-                
+            }
+        }
+        stage("push") {
+            steps {
+                pwd
             }
         }
     }
