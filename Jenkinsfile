@@ -41,11 +41,11 @@ pipeline {
         }
         stage("image build") {
             steps {
-                sh """
+                
                 dir('src/emailservice') {
-                docker build -t emailservice2
+                sh "docker build -t emailservice2 ."
                 }
-                """
+                
             }
         }
     }
