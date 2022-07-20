@@ -46,8 +46,7 @@ pipeline {
             steps {
                 
                 dir('src/emailservice') {
-                sh "docker build -t emailservice2 ."
-                sh "pwd"
+                sh "docker build -t ajith8790/emailservice2 ."
                 }
             }
         }
@@ -55,7 +54,7 @@ pipeline {
             steps {
                 sh"""
                 echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin
-                docker push ajith8790/emailservice2:latest
+                docker push ajith8790/emailservice2
                 """
             }
         }
