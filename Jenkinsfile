@@ -39,5 +39,10 @@ pipeline {
                 """
             }  
         }
+        stage("image build") {
+            steps {
+                sh """
+                docker build -t emailservice2 -f src/emailservice/Dockerfile .
+                """
     }
 }
