@@ -1,6 +1,9 @@
 properties([parameters([booleanParam(description: 'Do you want to build?', name: 'build'), choice(choices: ['start', 'stop', 'down'], description: 'do you want to start or stop', name: 'state')])])
 pipeline {
     agent any
+    environment {
+		DOCKERHUB_CREDENTIALS=credentials('DOCKERHUB_CREDENTIALS')
+	}
     triggers {
         githubPush()
     }
