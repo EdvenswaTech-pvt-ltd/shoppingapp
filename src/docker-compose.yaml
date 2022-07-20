@@ -1,0 +1,181 @@
+version: "3.3"
+services:
+  adservice:
+    build: adservice
+    image: ad-image
+    container_name: adservice
+    ports:
+      - 9555:9555
+    environment: 
+      PORT: 9555
+      DISABLE_TRACING: 1
+      DISABLE_STATS: 1
+    restart: always
+    networks: 
+      - net
+    
+  emailservice:
+    build: emailservice
+    image: emailservice
+    container_name: emailservice
+    ports:
+      - 5000:8080
+    environment:
+      PORT: 8080
+      DISABLE_TRACING: 1
+      DISABLE_PROFILER: 1
+    restart: always
+    networks: 
+      - net
+  checkoutservice:
+    build: checkoutservice
+    image: checkout
+    container_name: checkoutservice
+    ports: 
+      - 5050:5050
+    restart: always
+    networks: 
+      - net
+    environment:
+      PRODUCT_CATALOG_SERVICE_ADDR: productcatalogservice:3550
+      SHIPPING_SERVICE_ADDR: shippingservice:50052
+      PAYMENT_SERVICE_ADDR: paymentservice:50051
+      EMAIL_SERVICE_ADDR: emailservice:5000
+      CURRENCY_SERVICE_ADDR: currencyservice:7000
+      CART_SERVICE_ADDR: cartservice:7070
+      PORT: 5050
+      DISABLE_TRACING: 1
+      DISABLE_PROFILER: 1
+      DISABLE_STATS: 1
+    depends_on: 
+      - productcatalogservice
+      - shippingservice
+      - paymentservice
+      - emailservice
+      - currencyservice
+      - cartservice
+  recommendationservice: 
+    build: recommendationservice
+    image: recommendationservice
+    container_name: recommendationservice
+    ports: 
+      - 8080:8080
+    restart: always
+    networks: 
+      - net
+    depends_on: 
+      - productcatalogservice
+    environment: 
+      PRODUCT_CATALOG_SERVICE_ADDR: productcatalogservice:3550
+      PORT: 8080
+      DISABLE_TRACING : 1
+      DISABLE_PROFILER: 1
+      DISABLE_DEBUGGER: 1
+  frontend:
+    build: frontend
+    image: frontend
+    container_name: frontend
+    ports:
+      - 80:8080
+    restart: always
+    networks: 
+      - net
+    depends_on: 
+      - productcatalogservice
+      - shippingservice
+      - currencyservice
+      - cartservice
+      - recommendationservice
+      - checkoutservice
+      - adservice
+    environment: 
+      PRODUCT_CATALOG_SERVICE_ADDR: productcatalogservice:3550
+      SHIPPING_SERVICE_ADDR: shippingservice:50052
+      CURRENCY_SERVICE_ADDR: currencyservice:7000
+      CART_SERVICE_ADDR: cartservice:7070
+      RECOMMENDATION_SERVICE_ADDR: recommendationservice:8080
+      CHECKOUT_SERVICE_ADDR: checkoutservice:5050
+      AD_SERVICE_ADDR: adservice:9555
+      PORT: 8080
+      DISABLE_TRACING : 1
+      DISABLE_PROFILER: 1
+  paymentservice:
+    # build: paymentservice
+    image: gcr.io/google-samples/microservices-demo/paymentservice:v0.3.8
+    container_name: paymentservice
+    ports:
+      - 50051:50051
+    environment:
+      PORT: 50051
+      DISABLE_TRACING : 1
+      DISABLE_PROFILER: 1
+      DISABLE_DEBUGGER: 1
+    restart: always
+    networks: 
+      - net
+  productcatalogservice:
+    build: productcatalogservice
+    image: productcatalogservice
+    container_name: productcatalogservice 
+    ports:
+      - 3550:3550
+    environment: 
+      PORT: 3550
+      DISABLE_TRACING : 1
+      DISABLE_PROFILER: 1
+      DISABLE_STATS: 1
+    restart: always
+    networks: 
+      - net
+  cartservice:
+    # build: cartservice/src
+    image: gcr.io/google-samples/microservices-demo/cartservice:v0.3.8
+    container_name: cartservice
+    ports: 
+      - 7070:7070
+    depends_on:
+      - redis-cart
+    environment: 
+      REDIS_ADDR: redis-cart:6379
+    restart: always
+    networks: 
+      - net
+  currencyservice:
+   #  build: currencyservice
+    image: gcr.io/google-samples/microservices-demo/currencyservice:v0.3.8
+    container_name: currencyservice
+    ports: 
+      - 7000:7000
+    environment:
+      PORT: 7000
+      DISABLE_TRACING : 1
+      DISABLE_PROFILER: 1
+      DISABLE_DEBUGGER: 1
+    restart: always
+    networks: 
+      - net
+  shippingservice:
+    build: shippingservice
+    image: shippingservice
+    container_name: shippingservice
+    ports: 
+      - 50052:50052
+    environment:
+      PORT: 50052
+      DISABLE_TRACING : 1
+      DISABLE_PROFILER: 1
+      DISABLE_STATS: 1
+    restart: always
+    networks: 
+      - net
+  redis-cart:
+    image: redis:alpine
+    container_name: redis-cart
+    ports:
+      - 6379:6379
+    restart: always
+    networks: 
+      - net
+networks: 
+  net:
+      
