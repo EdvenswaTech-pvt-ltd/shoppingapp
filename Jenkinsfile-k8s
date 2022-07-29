@@ -1,29 +1,42 @@
 pipeline{
 	agent any
+	
+	environment {
+	    AWS_REGION = 
+	    REPO_URL = 
+	    IMAGE_NAME = 
+	}
+	
 	stages {
-		stage('Build') {
-			steps {
-				sh 'sudo docker build -t ajith8790/adservice:$BUILD_NUMBER -f src/adservice/Dockerfile .'
-			}
-		}
-        stage('ecr_login') {
-            steps {        
-		        withCredentials([string(credentialsId: 'DOCKER_PWD', variable: 'PASSWORD')]) {
-                    sh 'sudo docker login -u patelsaheb -p $PASSWORD'
-                }
+	    stage('Build') {
+		    steps {
+			sh 'sudo docker build -t $REPO-URL/$IMAGE_NAME:$BUILD_NUMBER  -f src/adservice/Dockerfile .'
+			// write build files for all services like this
+		    }
+	    }
+		
+            stage('ecr_login') {
+                   steps {        
+		        sh 'aws ecr get-login --region "$AWS_REGION" --no-include-email'
+                   }
             }
-        }
+	    
 		stage('Push_to_ecr') {
 			steps {
-				sh 'sudo docker push ajith8790/adservice:$BUILD_NUMBER'
+				sh 'sudo docker push $REPO-URL/$IMAGE_NAME:$BUILD_NUMBER '
+				// push all the images we built
 			}
 		}
+		
         stage('eks deploy') {
-			steps {
-				sh 'kubectl get -o yaml deploy/shopping-app > deployment.yaml'
-                sh "sed -i 's/hellonodejs:latest/hellonodejs:eks/g' deployment.yaml"
-                sh 'kubectl apply -f deployment.yaml'
-                sh 'kubectl rollout restart deployment shopping-app'
+		steps {
+			sh"""
+			kubectl get -o yaml deploy/shopping-app > deployment.yaml
+                	sed -i 's/shopping-app:latest/$IMAGE_NAME:$BUILD_NUMBER/g' deployment.yaml
+                	kubectl apply -f deployment.yaml
+                	kubectl rollout restart deployment shopping-app
+			"""
+			// change image for every deployment
 			}
 		}
 	}
