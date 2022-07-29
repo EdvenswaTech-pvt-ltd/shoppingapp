@@ -1,0 +1,36 @@
+pipeline{
+	agent any
+	stages {
+		stage('Build') {
+			steps {
+				sh 'sudo docker build -t ajith8790/adservice:$BUILD_NUMBER -f src/adservice/Dockerfile .'
+			}
+		}
+        stage('ecr_login') {
+            steps {        
+		        withCredentials([string(credentialsId: 'DOCKER_PWD', variable: 'PASSWORD')]) {
+                    sh 'sudo docker login -u patelsaheb -p $PASSWORD'
+                }
+            }
+        }
+		stage('Push_to_ecr') {
+			steps {
+				sh 'sudo docker push ajith8790/adservice:$BUILD_NUMBER'
+			}
+		}
+        stage('eks deploy') {
+			steps {
+				sh 'kubectl get -o yaml deploy/shopping-app > deployment.yaml'
+                sh "sed -i 's/hellonodejs:latest/hellonodejs:eks/g' deployment.yaml"
+                sh 'kubectl apply -f deployment.yaml'
+                sh 'kubectl rollout restart deployment shopping-app'
+			}
+		}
+	}
+	post {
+		always {
+            		cleanWs()
+            		echo "done"
+		}
+	}
+}
