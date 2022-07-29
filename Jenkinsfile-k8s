@@ -8,6 +8,12 @@ pipeline{
 	}
 	
 	stages {
+	    stage('git clone') {
+	            steps {
+		        git credentialsId: 'bitbucket', url: 'https://github.com/EdvenswaTech-pvt-ltd/shoppingapp.git'
+			}
+	    }
+	    
 	    stage('Build') {
 		    steps {
 			sh 'sudo docker build -t $REPO-URL/$IMAGE_NAME:$BUILD_NUMBER  -f src/adservice/Dockerfile .'
